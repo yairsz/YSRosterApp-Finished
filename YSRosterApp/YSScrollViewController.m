@@ -19,7 +19,10 @@
 @property (weak, nonatomic) IBOutlet UIScrollView *scrollView;
 @property (weak, nonatomic) IBOutlet UIButton *pinWheelButton;
 @property (strong, nonatomic) IBOutlet UITapGestureRecognizer *photoGR;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *textToSlidersConstraint;
+@property (weak, nonatomic) IBOutlet UIView *textFieldsView;
 
+@property (nonatomic) NSInteger navBarHeight;
 @property (weak, nonatomic) UITextField * activeField;
 
 @property (weak, nonatomic) IBOutlet UISlider *redSlider;
@@ -68,13 +71,27 @@
     //Run the Notification setup for the keyboard show
     [self registerForKeyboardNotifications];
     
-    self.scrollView.scrollEnabled = NO;
+    //set some scrollview options
+    self.scrollView.translatesAutoresizingMaskIntoConstraints  = NO;
+    self.scrollView.scrollEnabled = YES;
+    [self.scrollView setContentSize:CGSizeMake(320,764)];
+    
+    self.textFieldsView.frame = CGRectMake(self.textFieldsView.frame.origin.x,
+                                           self.textFieldsView.frame.origin.x,
+                                           self.textFieldsView.frame.size.width,
+                                           self.view.frame.size.height - self.textFieldsView.frame.origin.y);
+    
+    self.navBarHeight = self.navigationController.navigationBar.frame.size.height + [[UIApplication sharedApplication] statusBarFrame].size.height;
     
 }
 
 - (void) viewWillLayoutSubviews {
-    [self.scrollView setContentOffset:CGPointMake(0, 0) animated:NO];
+    //set constraints height to fit size of screen
+    self.textToSlidersConstraint.constant = self.view.frame.size.height - (self.textFieldsView.frame.origin.y + self.textFieldsView.frame.size.height);
+    
+    self.navBarHeight = self.navigationController.navigationBar.frame.size.height + [[UIApplication sharedApplication] statusBarFrame].size.height;
 }
+
 
 - (void) viewWillDisappear:(BOOL)animated {
     NSArray * rgbValues = @[[NSNumber numberWithFloat:self.redValue],
@@ -145,7 +162,7 @@
 
 
 -(void) hideSlidersView {
-    [self.scrollView setContentOffset:CGPointMake(0, 0) animated:YES];
+    [self.scrollView setContentOffset:CGPointMake(0, - self.navBarHeight) animated:YES];
     
     //wait a second before hiding the sliders view credit http://stackoverflow.com/users/2087165/despotovic
     double delayInSeconds = 0.5f;
@@ -323,7 +340,7 @@
     CGSize kbSize = [[info objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size;
     
     //scroll so textviews are visible
-    [self.scrollView setContentOffset:CGPointMake(0, 0 + kbSize.height) animated:YES];
+    [self.scrollView setContentOffset:CGPointMake(0,kbSize.height - 50) animated:YES];
     
     self.pinWheelButton.enabled = NO;
     self.photoGR.enabled = NO;
@@ -334,11 +351,11 @@
 // Called when the UIKeyboardWillHideNotification is sent
 - (void)keyboardWillBeHidden:(NSNotification*)aNotification
 {
-    [self.scrollView setContentOffset:CGPointMake(0, 0) animated:YES];
+    [self.scrollView setContentOffset:CGPointMake(0, - self.navBarHeight) animated:YES];
     
     self.pinWheelButton.enabled = YES;
     self.photoGR.enabled = YES;
-    
+    self.scrollView.scrollEnabled = YES;
 }
 
 - (BOOL) canBecomeFirstResponder {
