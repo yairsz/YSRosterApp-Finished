@@ -21,6 +21,7 @@
 @property (strong, nonatomic) IBOutlet UITapGestureRecognizer *photoGR;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *textToSlidersConstraint;
 @property (weak, nonatomic) IBOutlet UIView *textFieldsView;
+@property (nonatomic) UIImagePickerController *imagePickerController;
 
 @property (nonatomic) NSInteger navBarHeight;
 @property (weak, nonatomic) UITextField * activeField;
@@ -209,13 +210,14 @@
 
 -(void) actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
-    UIImagePickerController * myPicker = [[UIImagePickerController alloc] init];
-    myPicker.delegate = self;
-    myPicker.allowsEditing = YES;
+    self.imagePickerController = [[UIImagePickerController alloc] init];
+    self.imagePickerController.delegate = self;
+    self.imagePickerController.allowsEditing = YES;
+    self.imagePickerController.modalTransitionStyle = UIModalTransitionStylePartialCurl;
     
     
     if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Camera"]) {
-        myPicker.sourceType = UIImagePickerControllerSourceTypeCamera;
+        self.imagePickerController.sourceType = UIImagePickerControllerSourceTypeCamera;
     } else if ([[actionSheet buttonTitleAtIndex:buttonIndex] isEqualToString:@"Choose Photo"]) {
         
         //check for authorization status
@@ -226,15 +228,15 @@
             [alertView show];
             
             //reset the message on top of the image view
-            self.photoMessageLabel.hidden = NO;
+            if (!self.selectedPerson.imagePath) self.photoMessageLabel.hidden = NO;
         } else {
-            myPicker.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+            self.imagePickerController.sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
         }
     } else {
         self.photoMessageLabel.hidden = NO;
         return;
     }
-    [self presentViewController:myPicker animated:YES completion:^{
+    [self presentViewController:self.imagePickerController animated:YES completion:^{
         
     }];
 }
@@ -264,6 +266,16 @@
         self.faceImageView.image = editedImage; //Display it in the detail view
         
         [self saveImageToSelectedPerson:editedImage];
+        
+        
+    }];
+}
+
+- (void) imagePickerControllerDidCancel:(UIImagePickerController *)picker {
+    
+    [self dismissViewControllerAnimated:YES completion:^{
+        if (!self.selectedPerson.imagePath) self.photoMessageLabel.hidden = NO;
+        
     }];
 }
 
