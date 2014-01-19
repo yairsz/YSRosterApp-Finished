@@ -84,6 +84,11 @@
     
     self.navBarHeight = self.navigationController.navigationBar.frame.size.height + [[UIApplication sharedApplication] statusBarFrame].size.height;
     
+    //Set the value of the sliders to the persons color so it doesn't jump when it is already set
+    self.redSlider.value = self.redValue;
+    self.greenSlider.value = self.greenValue;
+    self.blueSlider.value = self.blueValue;
+    
 }
 
 - (void) viewWillLayoutSubviews {
